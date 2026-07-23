@@ -1,64 +1,134 @@
 # Todo Manager
 
-A local-first Todo Manager built with React Native CLI and JavaScript. Firebase Authentication provides Email/Password accounts and persisted sessions. Redux Toolkit manages multiple lists and their tasks, while AsyncStorage keeps each user's todo data on the device across restarts.
+A polished, local-first task management app built with React Native CLI. Users
+can create an account, organize tasks into multiple lists, track completion
+progress, and keep their data available across app restarts.
+
+## App flow
+
+```text
+Splash → Onboarding → Sign In / Sign Up → Dashboard → Task List
+```
+
+Onboarding is displayed only on the first launch. Firebase restores signed-in
+sessions automatically, so returning users can continue from the dashboard.
 
 ## Features
 
-- Email/password sign in and registration with Firebase Authentication
-- Animated branded splash screen during application startup
-- Persistent Firebase sessions and auth-driven navigation
-- Multiple todo lists: create, rename, view, and delete
-- Todo items: create, edit, complete/uncomplete, and delete
-- Per-user local storage (one isolated AsyncStorage key per Firebase UID)
-- Input validation, friendly errors, destructive-action confirmations, empty states, and loading states
-- Reducer tests covering complete list and item CRUD
+### Onboarding and authentication
+
+- Animated splash screen and smooth three-step onboarding
+- First-launch onboarding persistence with AsyncStorage
+- Firebase email/password sign in and registration
+- Full name and password confirmation during sign up
+- Saved Firebase display name
+- Sign In/Sign Up tab transition with automatic form reset
+- Client-side email and password validation
+- Friendly messages for invalid credentials, duplicate accounts, weak
+  passwords, rate limits, and connectivity failures
+
+### Dashboard and lists
+
+- Personalized header with avatar, name, and email
+- Logout confirmation modal with Yes/No actions
+- Live task-based completion percentage and progress bar
+- Total lists, total tasks, and remaining-task statistics
+- Create, rename, open, and delete multiple lists
+- Per-list task count and completion progress
+- Three-dot list action menu with Edit and Delete options
+- Custom delete confirmation modal
+- Helpful empty state for first-time users
+
+### Tasks
+
+- Create, edit, complete, reopen, and delete tasks
+- Live progress summary for each list
+- Three-dot task action menu
+- Custom task delete confirmation modal
+- Accessible completion checkboxes and action labels
+- Improved empty state and floating add button
+
+### UI and experience
+
+- Consistent Ionicons vector icon system
+- Shared colors, spacing, cards, and shadows
+- Keyboard-aware authentication and edit forms
+- Safe-area support for modern Android and iOS devices
+- Loading, empty, validation, and destructive-action states
+
+## Tech stack
+
+- React Native 0.86 and React 19
+- React Navigation native stack
+- Redux Toolkit and React Redux
+- Firebase Authentication
+- AsyncStorage
+- React Native Vector Icons (Ionicons)
+- Jest and ESLint
 
 ## Project structure
 
 ```text
 src/
-  components/    Reusable inputs, buttons, modals, loading UI
+  components/    Reusable buttons, inputs, loading view, and edit modal
   config/        Firebase initialization and session persistence
-  navigation/    Authentication-aware root navigator
-  screens/       Authentication, lists, and task screens
-  store/         Redux Toolkit slices, thunks, and persistence
-  theme/         Shared design tokens
-  utils/         Validation and error mapping
+  navigation/    Splash, onboarding, and authentication-aware navigation
+  screens/       Onboarding, authentication, dashboard, and task screens
+  store/         Auth/todo state, async actions, selectors, and persistence
+  theme/         Shared colors and shadows
+  utils/         Form validation and authentication error mapping
 ```
 
 ## Prerequisites
 
 - Node.js 22.11 or newer
-- Android Studio/JDK 17 for Android, or Xcode/CocoaPods for iOS
-- A Firebase project
+- Android Studio and a compatible JDK for Android development
+- Xcode, Ruby/Bundler, and CocoaPods for iOS development
+- A Firebase project with Email/Password Authentication enabled
 
 ## Firebase setup
 
-1. In Firebase Console, create or select a project.
-2. Open **Authentication → Sign-in method** and enable **Email/Password**.
-3. Add a Web app to the Firebase project and copy its configuration.
-4. Replace the placeholder values in `src/config/firebase.js` with that configuration. These Firebase client values identify the project; access is enforced by Firebase Authentication and Security Rules.
+1. Create or select a project in the Firebase Console.
+2. Go to **Authentication → Sign-in method**.
+3. Enable the **Email/Password** provider.
+4. Register a Firebase Web app.
+5. Add its configuration values to `src/config/firebase.js`.
 
-No Firestore or Realtime Database setup is required. Todo data is intentionally stored only in AsyncStorage.
+Firestore and Realtime Database are not required. Firebase handles
+authentication, while todo data is stored locally per signed-in user.
 
-## Install and run
+## Installation
 
 ```sh
 npm install
+```
+
+For iOS, install native pods:
+
+```sh
+bundle install
+cd ios
+bundle exec pod install
+cd ..
+```
+
+## Running the app
+
+Start Metro:
+
+```sh
 npm start
 ```
 
-In a second terminal:
+Run the desired platform in another terminal:
 
 ```sh
 npm run android
 ```
 
-For iOS:
+or:
 
 ```sh
-bundle install
-cd ios && bundle exec pod install && cd ..
 npm run ios
 ```
 
@@ -69,19 +139,35 @@ npm run lint
 npm test -- --runInBand
 ```
 
-## Build an Android APK
+The tests cover list/task CRUD, dashboard progress calculations, email
+validation edge cases, and authentication error mapping.
 
-Debug APK (suitable for review/testing):
+## Local persistence
+
+Firebase Authentication persists the active session through AsyncStorage.
+Todo lists are isolated by Firebase user ID and stored under:
+
+```text
+@todo-manager/lists/<firebase-uid>
+```
+
+Redux hydrates the correct user's lists after authentication finishes. Local
+writes are debounced to avoid unnecessary storage operations. Logging out
+clears in-memory todo state but preserves the user's stored lists for their next
+sign-in on the same device.
+
+## Android debug APK
 
 ```sh
 cd android
 ./gradlew assembleDebug
 ```
 
-Output: `android/app/build/outputs/apk/debug/app-debug.apk`
+The generated APK is available at:
 
-For a distributable release, create a private upload keystore, configure signing values outside source control, and run `./gradlew assembleRelease`. See React Native's signed APK documentation; never commit release passwords or the private keystore.
+```text
+android/app/build/outputs/apk/debug/app-debug.apk
+```
 
-## Persistence notes
-
-Firebase Auth stores and restores the authenticated session through AsyncStorage. Todo lists are stored under `@todo-manager/lists/<firebase-uid>`. Redux is hydrated only after authentication resolves, and writes are debounced to avoid excessive device storage operations. Signing out clears in-memory state but preserves that user's local lists for their next sign-in on the same device.
+For production distribution, configure a private release keystore and keep all
+signing credentials outside source control.
