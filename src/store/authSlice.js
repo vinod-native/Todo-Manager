@@ -1,5 +1,5 @@
 import {createAsyncThunk, createSlice} from '@reduxjs/toolkit';
-import {createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut} from 'firebase/auth';
+import {createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, updateProfile} from 'firebase/auth';
 import {auth} from '../config/firebase';
 import {friendlyAuthError} from '../utils/validation';
 
@@ -7,8 +7,11 @@ export const login = createAsyncThunk('auth/login', async ({email, password}, ap
   try { await signInWithEmailAndPassword(auth, email.trim(), password); }
   catch (error) { return api.rejectWithValue(friendlyAuthError(error)); }
 });
-export const register = createAsyncThunk('auth/register', async ({email, password}, api) => {
-  try { await createUserWithEmailAndPassword(auth, email.trim(), password); }
+export const register = createAsyncThunk('auth/register', async ({name, email, password}, api) => {
+  try {
+    const credential = await createUserWithEmailAndPassword(auth, email.trim(), password);
+    await updateProfile(credential.user, {displayName: name.trim()});
+  }
   catch (error) { return api.rejectWithValue(friendlyAuthError(error)); }
 });
 export const logout = createAsyncThunk('auth/logout', async (_, api) => {
@@ -21,7 +24,7 @@ const authSlice = createSlice({
   initialState: {user: null, initializing: true, loading: false, error: null},
   reducers: {
     authStateChanged: (state, {payload}) => {
-      state.user = payload ? {uid: payload.uid, email: payload.email} : null;
+      state.user = payload ? {uid: payload.uid, email: payload.email, name: payload.displayName || ''} : null;
       state.initializing = false; state.error = null;
     },
     clearAuthError: state => { state.error = null; },
