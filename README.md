@@ -1,97 +1,87 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# Todo Manager
 
-# Getting Started
+A local-first Todo Manager built with React Native CLI and JavaScript. Firebase Authentication provides Email/Password accounts and persisted sessions. Redux Toolkit manages multiple lists and their tasks, while AsyncStorage keeps each user's todo data on the device across restarts.
 
-> **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
+## Features
 
-## Step 1: Start Metro
+- Email/password sign in and registration with Firebase Authentication
+- Animated branded splash screen during application startup
+- Persistent Firebase sessions and auth-driven navigation
+- Multiple todo lists: create, rename, view, and delete
+- Todo items: create, edit, complete/uncomplete, and delete
+- Per-user local storage (one isolated AsyncStorage key per Firebase UID)
+- Input validation, friendly errors, destructive-action confirmations, empty states, and loading states
+- Reducer tests covering complete list and item CRUD
 
-First, you will need to run **Metro**, the JavaScript build tool for React Native.
+## Project structure
 
-To start the Metro dev server, run the following command from the root of your React Native project:
+```text
+src/
+  components/    Reusable inputs, buttons, modals, loading UI
+  config/        Firebase initialization and session persistence
+  navigation/    Authentication-aware root navigator
+  screens/       Authentication, lists, and task screens
+  store/         Redux Toolkit slices, thunks, and persistence
+  theme/         Shared design tokens
+  utils/         Validation and error mapping
+```
+
+## Prerequisites
+
+- Node.js 22.11 or newer
+- Android Studio/JDK 17 for Android, or Xcode/CocoaPods for iOS
+- A Firebase project
+
+## Firebase setup
+
+1. In Firebase Console, create or select a project.
+2. Open **Authentication → Sign-in method** and enable **Email/Password**.
+3. Add a Web app to the Firebase project and copy its configuration.
+4. Replace the placeholder values in `src/config/firebase.js` with that configuration. These Firebase client values identify the project; access is enforced by Firebase Authentication and Security Rules.
+
+No Firestore or Realtime Database setup is required. Todo data is intentionally stored only in AsyncStorage.
+
+## Install and run
 
 ```sh
-# Using npm
+npm install
 npm start
-
-# OR using Yarn
-yarn start
 ```
 
-## Step 2: Build and run your app
-
-With Metro running, open a new terminal window/pane from the root of your React Native project, and use one of the following commands to build and run your Android or iOS app:
-
-### Android
+In a second terminal:
 
 ```sh
-# Using npm
 npm run android
-
-# OR using Yarn
-yarn android
 ```
 
-### iOS
-
-For iOS, remember to install CocoaPods dependencies (this only needs to be run on first clone or after updating native deps).
-
-The first time you create a new project, run the Ruby bundler to install CocoaPods itself:
+For iOS:
 
 ```sh
 bundle install
-```
-
-Then, and every time you update your native dependencies, run:
-
-```sh
-bundle exec pod install
-```
-
-For more information, please visit [CocoaPods Getting Started guide](https://guides.cocoapods.org/using/getting-started.html).
-
-```sh
-# Using npm
+cd ios && bundle exec pod install && cd ..
 npm run ios
-
-# OR using Yarn
-yarn ios
 ```
 
-If everything is set up correctly, you should see your new app running in the Android Emulator, iOS Simulator, or your connected device.
+## Quality checks
 
-This is one way to run your app — you can also build it directly from Android Studio or Xcode.
+```sh
+npm run lint
+npm test -- --runInBand
+```
 
-## Step 3: Modify your app
+## Build an Android APK
 
-Now that you have successfully run the app, let's make changes!
+Debug APK (suitable for review/testing):
 
-Open `App.tsx` in your text editor of choice and make some changes. When you save, your app will automatically update and reflect these changes — this is powered by [Fast Refresh](https://reactnative.dev/docs/fast-refresh).
+```sh
+cd android
+./gradlew assembleDebug
+```
 
-When you want to forcefully reload, for example to reset the state of your app, you can perform a full reload:
+Output: `android/app/build/outputs/apk/debug/app-debug.apk`
 
-- **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Dev Menu**, accessed via <kbd>Ctrl</kbd> + <kbd>M</kbd> (Windows/Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (macOS).
-- **iOS**: Press <kbd>R</kbd> in iOS Simulator.
+For a distributable release, create a private upload keystore, configure signing values outside source control, and run `./gradlew assembleRelease`. See React Native's signed APK documentation; never commit release passwords or the private keystore.
 
-## Congratulations! :tada:
+## Persistence notes
 
-You've successfully run and modified your React Native App. :partying_face:
-
-### Now what?
-
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [docs](https://reactnative.dev/docs/getting-started).
-
-# Troubleshooting
-
-If you're having issues getting the above steps to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
-
-# Learn More
-
-To learn more about React Native, take a look at the following resources:
-
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+Firebase Auth stores and restores the authenticated session through AsyncStorage. Todo lists are stored under `@todo-manager/lists/<firebase-uid>`. Redux is hydrated only after authentication resolves, and writes are debounced to avoid excessive device storage operations. Signing out clears in-memory state but preserves that user's local lists for their next sign-in on the same device.
