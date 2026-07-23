@@ -50,7 +50,7 @@ function Illustration({step}) {
   return (
     <View style={[styles.illustration, {backgroundColor: step.tint}]}>
       <View style={[styles.glow, {backgroundColor: step.accent}]} />
-      <View style={[styles.iconBox, shadows.card]}>
+      <View style={[styles.iconBox,]}>
         <Ionicons name={step.icon} size={44} color={step.accent} />
       </View>
       <View style={[styles.taskCard, styles.firstCard, shadows.card]}>
@@ -79,25 +79,56 @@ function Illustration({step}) {
 
 export default function OnboardingScreen({onComplete}) {
   const [activeIndex, setActiveIndex] = useState(0);
+  const [transitioning, setTransitioning] = useState(false);
   const fade = useRef(new Animated.Value(1)).current;
+  const slide = useRef(new Animated.Value(0)).current;
   const step = steps[activeIndex];
 
   const showStep = nextIndex => {
-    Animated.timing(fade, {
-      toValue: 0,
-      duration: 120,
-      useNativeDriver: true,
-    }).start(() => {
-      setActiveIndex(nextIndex);
+    if (transitioning) {
+      return;
+    }
+
+    setTransitioning(true);
+    Animated.parallel([
       Animated.timing(fade, {
-        toValue: 1,
-        duration: 260,
+        toValue: 0.35,
+        duration: 120,
         useNativeDriver: true,
-      }).start();
+      }),
+      Animated.timing(slide, {
+        toValue: -14,
+        duration: 120,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      setActiveIndex(nextIndex);
+      fade.setValue(0.35);
+      slide.setValue(14);
+
+      requestAnimationFrame(() => {
+        Animated.parallel([
+          Animated.timing(fade, {
+            toValue: 1,
+            duration: 230,
+            useNativeDriver: true,
+          }),
+          Animated.spring(slide, {
+            toValue: 0,
+            damping: 20,
+            stiffness: 180,
+            mass: 0.7,
+            useNativeDriver: true,
+          }),
+        ]).start(() => setTransitioning(false));
+      });
     });
   };
 
   const handleNext = () => {
+    if (transitioning) {
+      return;
+    }
     if (activeIndex === steps.length - 1) {
       onComplete();
       return;
@@ -105,11 +136,18 @@ export default function OnboardingScreen({onComplete}) {
     showStep(activeIndex + 1);
   };
 
+  const transitionStyle = {
+    opacity: fade,
+    transform: [{translateX: slide}],
+  };
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.header}>
         <View style={styles.brand}>
-          <Ionicons name="checkmark" size={21} color="#FFFFFF" />
+          <View style={styles.brandCheck}>
+            <Ionicons name="checkmark" size={21} color="#FFFFFF" />
+          </View>
           <Text style={styles.brandText}>Todo</Text>
         </View>
         {activeIndex < steps.length - 1 ? (
@@ -124,7 +162,7 @@ export default function OnboardingScreen({onComplete}) {
         )}
       </View>
 
-      <Animated.View style={[styles.content, {opacity: fade}]}>
+      <Animated.View style={[styles.content, transitionStyle]}>
         <Illustration step={step} />
         <Text style={[styles.eyebrow, {color: step.accent}]}>
           {step.eyebrow}
@@ -133,7 +171,7 @@ export default function OnboardingScreen({onComplete}) {
         <Text style={styles.description}>{step.description}</Text>
       </Animated.View>
 
-      <View style={styles.footer}>
+      <Animated.View style={[styles.footer, transitionStyle]}>
         <View style={styles.dots}>
           {steps.map((item, index) => (
             <View
@@ -150,6 +188,7 @@ export default function OnboardingScreen({onComplete}) {
         </View>
         <Pressable
           accessibilityRole="button"
+          disabled={transitioning}
           onPress={handleNext}
           style={({pressed}) => [
             styles.button,
@@ -166,7 +205,7 @@ export default function OnboardingScreen({onComplete}) {
             style={styles.arrow}
           />
         </Pressable>
-      </View>
+      </Animated.View>
     </SafeAreaView>
   );
 }
@@ -185,13 +224,10 @@ const styles = StyleSheet.create({
     width: 30,
     height: 30,
     borderRadius: 10,
-    textAlign: 'center',
-    lineHeight: 30,
     overflow: 'hidden',
-    color: '#FFFFFF',
     backgroundColor: colors.primary,
-    fontSize: 18,
-    fontWeight: '900',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   brandText: {
     marginLeft: 9,
