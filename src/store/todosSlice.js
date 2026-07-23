@@ -1,4 +1,9 @@
-import {createAsyncThunk, createSlice, nanoid} from '@reduxjs/toolkit';
+import {
+  createAsyncThunk,
+  createSelector,
+  createSlice,
+  nanoid,
+} from '@reduxjs/toolkit';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const storageKey = uid => `@todo-manager/lists/${uid}`;
@@ -6,6 +11,26 @@ export const hydrateTodos = createAsyncThunk('todos/hydrate', async uid => {
   const raw = await AsyncStorage.getItem(storageKey(uid));
   return {uid, lists: raw ? JSON.parse(raw) : []};
 });
+
+export const selectTodoStats = createSelector(
+  state => state.todos.lists,
+  lists => {
+  const total = lists.reduce((sum, list) => sum + list.items.length, 0);
+  const completed = lists.reduce(
+    (sum, list) =>
+      sum + list.items.filter(item => item.completed).length,
+    0,
+  );
+  const remaining = total - completed;
+
+  return {
+    total,
+    completed,
+    remaining,
+    progress: total ? Math.round((completed / total) * 100) : 0,
+  };
+  },
+);
 
 const todosSlice = createSlice({
   name: 'todos', initialState: {lists: [], ownerId: null, hydrated: false, error: null},

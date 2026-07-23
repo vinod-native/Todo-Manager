@@ -1,4 +1,4 @@
-import React, {useMemo, useState} from 'react';
+import React, {useState} from 'react';
 import {
   FlatList,
   Modal,
@@ -13,7 +13,12 @@ import {useDispatch, useSelector} from 'react-redux';
 import AppButton from '../components/AppButton';
 import EditModal from '../components/EditModal';
 import {logout} from '../store/authSlice';
-import {addList, deleteList, updateList} from '../store/todosSlice';
+import {
+  addList,
+  deleteList,
+  selectTodoStats,
+  updateList,
+} from '../store/todosSlice';
 import {colors, shadows} from '../theme';
 
 function LogoutModal({visible, loading, onCancel, onConfirm}) {
@@ -201,25 +206,12 @@ export default function ListsScreen({navigation}) {
   const lists = useSelector(state => state.todos.lists);
   const user = useSelector(state => state.auth.user);
   const authLoading = useSelector(state => state.auth.loading);
+  const stats = useSelector(selectTodoStats);
   const [editing, setEditing] = useState(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [actionList, setActionList] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
-
-  const stats = useMemo(() => {
-    const total = lists.reduce((sum, list) => sum + list.items.length, 0);
-    const completed = lists.reduce(
-      (sum, list) =>
-        sum + list.items.filter(item => item.completed).length,
-      0,
-    );
-    return {
-      total,
-      completed,
-      progress: total ? Math.round((completed / total) * 100) : 0,
-    };
-  }, [lists]);
 
   const displayName =
     user?.name?.trim() || user?.email?.split('@')[0] || 'there';
@@ -335,7 +327,16 @@ export default function ListsScreen({navigation}) {
         <View style={styles.summaryTop}>
           <View>
             <Text style={styles.summaryLabel}>Overall progress</Text>
-            <Text style={styles.summaryValue}>{stats.progress}% complete</Text>
+            <Text style={styles.summaryValue}>
+              {stats.total
+                ? `${stats.progress}% complete`
+                : 'No tasks yet'}
+            </Text>
+            <Text style={styles.summaryTaskCount}>
+              {stats.total
+                ? `${stats.completed} of ${stats.total} tasks completed`
+                : 'Add a task to start tracking progress'}
+            </Text>
           </View>
           <View style={styles.summaryIcon}>
             <Ionicons
@@ -365,8 +366,8 @@ export default function ListsScreen({navigation}) {
           </View>
           <View style={styles.statDivider} />
           <View style={styles.stat}>
-            <Text style={styles.statValue}>{stats.completed}</Text>
-            <Text style={styles.statLabel}>Completed</Text>
+            <Text style={styles.statValue}>{stats.remaining}</Text>
+            <Text style={styles.statLabel}>Remaining</Text>
           </View>
         </View>
       </View>
@@ -577,6 +578,12 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 22,
     fontWeight: '900',
+  },
+  summaryTaskCount: {
+    marginTop: 5,
+    color: '#DCDDFF',
+    fontSize: 11,
+    fontWeight: '600',
   },
   summaryIcon: {
     width: 48,
