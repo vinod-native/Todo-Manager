@@ -1,5 +1,6 @@
 import React, {useEffect, useRef} from 'react';
 import {Animated, Easing, StyleSheet, Text, View} from 'react-native';
+import {Ionicons} from '@react-native-vector-icons/ionicons/static';
 import {colors} from '../theme';
 
 export default function SplashScreen() {
@@ -27,7 +28,7 @@ export default function SplashScreen() {
       <Animated.View
         style={[styles.content, {opacity, transform: [{scale}]}]}>
         <View style={styles.logo}>
-          <Text style={styles.check}>✓</Text>
+          <Ionicons name="checkmark" size={56} color={colors.primary} />
         </View>
         <Text style={styles.title}>Todo Manager</Text>
         <Text style={styles.subtitle}>Plan it. Do it. Done.</Text>
@@ -53,7 +54,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: '#FFFFFF',
   },
-  check: {fontSize: 52, lineHeight: 62, fontWeight: '900', color: colors.primary},
   title: {marginTop: 24, fontSize: 31, fontWeight: '900', color: '#FFFFFF'},
   subtitle: {marginTop: 8, fontSize: 16, color: '#E4E5FF'},
   footer: {

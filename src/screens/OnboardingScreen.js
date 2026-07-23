@@ -1,4 +1,5 @@
 import React, {useRef, useState} from 'react';
+import {Ionicons} from '@react-native-vector-icons/ionicons/static';
 import {
   Animated,
   Dimensions,
@@ -20,7 +21,7 @@ const steps = [
       'Create separate lists for work, personal goals, shopping, or anything else you want to organize.',
     accent: '#5B5FEF',
     tint: '#EEEEFF',
-    icon: '＋',
+    icon: 'add',
     cards: ['Today’s priorities', 'Weekend shopping'],
   },
   {
@@ -30,7 +31,7 @@ const steps = [
       'Add clear tasks inside every list, then edit them anytime as your plans change.',
     accent: '#F19A54',
     tint: '#FFF2E7',
-    icon: '✎',
+    icon: 'create-outline',
     cards: ['Prepare presentation', 'Book dentist appointment'],
   },
   {
@@ -40,7 +41,7 @@ const steps = [
       'Mark todos complete and keep a simple view of everything you have already achieved.',
     accent: '#2E9D68',
     tint: '#E8F7F0',
-    icon: '✓',
+    icon: 'checkmark',
     cards: ['Morning workout', 'Send weekly report'],
   },
 ];
@@ -50,7 +51,7 @@ function Illustration({step}) {
     <View style={[styles.illustration, {backgroundColor: step.tint}]}>
       <View style={[styles.glow, {backgroundColor: step.accent}]} />
       <View style={[styles.iconBox, shadows.card]}>
-        <Text style={[styles.icon, {color: step.accent}]}>{step.icon}</Text>
+        <Ionicons name={step.icon} size={44} color={step.accent} />
       </View>
       <View style={[styles.taskCard, styles.firstCard, shadows.card]}>
         <View style={[styles.checkCircle, {borderColor: step.accent}]} />
@@ -65,7 +66,7 @@ function Illustration({step}) {
             styles.checkCircle,
             {backgroundColor: step.accent, borderColor: step.accent},
           ]}>
-          <Text style={styles.tinyCheck}>✓</Text>
+          <Ionicons name="checkmark" size={15} color="#FFFFFF" />
         </View>
         <View>
           <Text style={styles.taskText}>{step.cards[1]}</Text>
@@ -108,7 +109,7 @@ export default function OnboardingScreen({onComplete}) {
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.header}>
         <View style={styles.brand}>
-          <Text style={styles.brandCheck}>✓</Text>
+          <Ionicons name="checkmark" size={21} color="#FFFFFF" />
           <Text style={styles.brandText}>Todo</Text>
         </View>
         {activeIndex < steps.length - 1 ? (
@@ -158,7 +159,12 @@ export default function OnboardingScreen({onComplete}) {
           <Text style={styles.buttonText}>
             {activeIndex === steps.length - 1 ? 'Get Started' : 'Continue'}
           </Text>
-          <Text style={styles.arrow}>→</Text>
+          <Ionicons
+            name="arrow-forward"
+            size={23}
+            color="#FFFFFF"
+            style={styles.arrow}
+          />
         </Pressable>
       </View>
     </SafeAreaView>
@@ -225,7 +231,6 @@ const styles = StyleSheet.create({
     left: 30,
     top: 30,
   },
-  icon: {fontSize: 42, lineHeight: 48, fontWeight: '900'},
   taskCard: {
     position: 'absolute',
     left: 56,
@@ -248,7 +253,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  tinyCheck: {color: '#FFFFFF', fontSize: 13, fontWeight: '900'},
   taskText: {color: colors.text, fontSize: 13, fontWeight: '800'},
   taskLine: {
     height: 5,
@@ -307,8 +311,5 @@ const styles = StyleSheet.create({
   arrow: {
     position: 'absolute',
     right: 22,
-    color: '#FFFFFF',
-    fontSize: 25,
-    lineHeight: 28,
   },
 });

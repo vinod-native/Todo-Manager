@@ -13,6 +13,7 @@ import {
   View,
 } from 'react-native';
 import {useDispatch, useSelector} from 'react-redux';
+import {Ionicons} from '@react-native-vector-icons/ionicons/static';
 import AppButton from '../components/AppButton';
 import AppInput from '../components/AppInput';
 import {clearAuthError, login, register} from '../store/authSlice';
@@ -145,7 +146,7 @@ export default function AuthScreen() {
         showsVerticalScrollIndicator={false}>
         <View style={styles.hero}>
           <View style={styles.logo}>
-            <Text style={styles.logoText}>✓</Text>
+            <Ionicons name="checkmark" size={37} color="#FFFFFF" />
           </View>
           <Text style={styles.title}>
             Organize your day
@@ -282,7 +283,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: colors.primary,
   },
-  logoText: {color: '#FFFFFF', fontSize: 31, fontWeight: '900'},
   title: {
     marginTop: 17,
     color: colors.text,
